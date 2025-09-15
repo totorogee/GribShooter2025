@@ -6,7 +6,7 @@
 - **Setup steps** - Show at the end of message, not in the middle
 - **Be concise** - Answer the specific question first, then provide suggestions
 - **Don't over-engineer** - Keep solutions simple and focused
-- **Keep responses short** - Provide brief, direct answers with fewer excessive details
+- **Keep responses short** - Brief, direct answers
 
 ## File Organization Rules
 - **New Functions**: When creating new functions, create a new folder for each function

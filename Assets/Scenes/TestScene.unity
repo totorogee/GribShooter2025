@@ -225,7 +225,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 20
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -370,7 +370,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   HexSystem:
-    Orientation: 1
+    Orientation: 0
     Origin:
       x: 0
       y: 0
@@ -415,6 +415,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SpriteRenderer: {fileID: 9079748264404824699}
+  HexCoordinates:
+    x: 0
+    y: 0
+    z: 0
 --- !u!1 &3629884748010850312
 GameObject:
   m_ObjectHideFlags: 0
@@ -446,6 +450,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SpriteRenderer: {fileID: 7206915321320717611}
+  HexCoordinates:
+    x: 0
+    y: 0
+    z: 0
 --- !u!1 &4113211155793540670
 GameObject:
   m_ObjectHideFlags: 0
