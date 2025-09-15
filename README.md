@@ -18,10 +18,7 @@ GribShooter 2025 is a strategic tower defense game where players must protect th
 
 ## 🎯 Game Features
 
-- **Wave-based Combat**: Face increasingly challenging enemy waves
-- **Deck Building System**: Collect and upgrade cards between waves
 - **Multiple Defense Strategies**: Direct combat, unit deployment, and building construction
-- **Progressive Difficulty**: Each wave becomes more challenging
 - **Card Collection**: Unlock new weapons, units, and buildings
 
 ## 🛠️ Technical Requirements
@@ -40,7 +37,7 @@ GribShooter 2025 is a strategic tower defense game where players must protect th
 ### Installation Steps
 1. Clone the repository:
    ```bash
-   git clone [repository-url]
+   git clone [git@github.com:totorogee/GribShooter2025.git]
    cd GribShooter202509
    ```
 

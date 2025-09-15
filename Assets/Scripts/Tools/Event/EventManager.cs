@@ -7,19 +7,6 @@ using System.Collections.ObjectModel;
 namespace GameTool
 {
     
-    public static partial class EventName 
-{
-    public static string InitHexAtMouse         = "InitHexAtMouse";
-    public static string ClearTileAtMouse       = "ClearTileAtMouse";
-    public static string InitHexByHexInt        = "InitHexByHexInt";
-    public static string InitTilesHexRing       = "InitTilesHexRing";
-    public static string InitTilesHexPlane      = "InitTilesHexPlane";
-    public static string InitTilesCirPlane      = "InitTilesCirPlane";
-    public static string ClearAllTiles          = "ClearAllTiles";
-    public static string DisplayDataByHexInt    = "DisplayDataByHexInt";
-    
-}
-
     // EventManager : Listen and Trigger events
     // - Same event name with different argument treat as different event
     /// <summary>
@@ -53,11 +40,11 @@ namespace GameTool
             }
         }
 
-        private static Dictionary<EventKey, object> RegistoredEvents = new Dictionary<EventKey, object>();
+        private static Dictionary<EventKey, object> RegisteredEvents = new Dictionary<EventKey, object>();
 
-        public static ReadOnlyDictionary<EventKey, object> GetRegistoredEvents()
+        public static ReadOnlyDictionary<EventKey, object> GetRegisteredEvents()
         {
-            return new ReadOnlyDictionary<EventKey, object>(RegistoredEvents);
+            return new ReadOnlyDictionary<EventKey, object>(RegisteredEvents);
         }
 
         /// <summary>
@@ -69,7 +56,7 @@ namespace GameTool
         {
             EventKey thisInfo = new EventKey(eventName);
 
-            if (RegistoredEvents.TryGetValue(thisInfo, out object thisEvent))
+            if (RegisteredEvents.TryGetValue(thisInfo, out object thisEvent))
             {
                 ((UnityEvent)thisEvent).AddListener(listener);
             }
@@ -77,7 +64,7 @@ namespace GameTool
             {
                 thisEvent = new UnityEvent();
                 ((UnityEvent)thisEvent).AddListener(listener);
-                RegistoredEvents.Add(thisInfo, thisEvent);
+                RegisteredEvents.Add(thisInfo, thisEvent);
             }
         }
 
@@ -90,7 +77,7 @@ namespace GameTool
         {
             EventKey thisInfo = new EventKey(eventName);
 
-            if (RegistoredEvents.TryGetValue(thisInfo, out object thisEvent))
+            if (RegisteredEvents.TryGetValue(thisInfo, out object thisEvent))
             {
                 ((UnityEvent)thisEvent).RemoveListener(listener);
             }
@@ -108,7 +95,7 @@ namespace GameTool
         {
             EventKey thisInfo = new EventKey(eventName);
 
-            if (RegistoredEvents.TryGetValue(thisInfo, out object thisEvent))
+            if (RegisteredEvents.TryGetValue(thisInfo, out object thisEvent))
             {
                 ((UnityEvent)thisEvent).Invoke();
             }
@@ -128,7 +115,7 @@ namespace GameTool
         {
             EventKey thisInfo = new EventKey(eventName, typeof(T));
 
-            if (RegistoredEvents.TryGetValue(thisInfo, out object thisEvent))
+            if (RegisteredEvents.TryGetValue(thisInfo, out object thisEvent))
             {
                 ((UnityEvent<T>)thisEvent).AddListener(listener);
             }
@@ -136,7 +123,7 @@ namespace GameTool
             {
                 thisEvent = new UnityEvent<T>();
                 ((UnityEvent<T>)thisEvent).AddListener(listener);
-                RegistoredEvents.Add(thisInfo, thisEvent);
+                RegisteredEvents.Add(thisInfo, thisEvent);
             }
         }
 
@@ -150,7 +137,7 @@ namespace GameTool
         {
             EventKey thisInfo = new EventKey(eventName, typeof(T));
 
-            if (RegistoredEvents.TryGetValue(thisInfo, out object thisEvent))
+            if (RegisteredEvents.TryGetValue(thisInfo, out object thisEvent))
             {
                 ((UnityEvent<T>)thisEvent).RemoveListener(listener);
             }
@@ -170,7 +157,7 @@ namespace GameTool
         {
             EventKey thisInfo = new EventKey(eventName, typeof(T));
 
-            if (RegistoredEvents.TryGetValue(thisInfo, out object thisEvent))
+            if (RegisteredEvents.TryGetValue(thisInfo, out object thisEvent))
             {
                 ((UnityEvent<T>)thisEvent).Invoke(message);
             }
@@ -191,7 +178,7 @@ namespace GameTool
         {
             EventKey thisInfo = new EventKey(eventName, typeof(T1), typeof(T2));
 
-            if (RegistoredEvents.TryGetValue(thisInfo, out object thisEvent))
+            if (RegisteredEvents.TryGetValue(thisInfo, out object thisEvent))
             {
                 ((UnityEvent<T1, T2>)thisEvent).AddListener(listener);
             }
@@ -199,7 +186,7 @@ namespace GameTool
             {
                 thisEvent = new UnityEvent<T1, T2>();
                 ((UnityEvent<T1, T2>)thisEvent).AddListener(listener);
-                RegistoredEvents.Add(thisInfo, thisEvent);
+                RegisteredEvents.Add(thisInfo, thisEvent);
             }
         }
 
@@ -214,7 +201,7 @@ namespace GameTool
         {
             EventKey thisInfo = new EventKey(eventName, typeof(T1), typeof(T2));
 
-            if (RegistoredEvents.TryGetValue(thisInfo, out object thisEvent))
+            if (RegisteredEvents.TryGetValue(thisInfo, out object thisEvent))
             {
                 ((UnityEvent<T1, T2>)thisEvent).RemoveListener(listener);
             }
@@ -236,7 +223,7 @@ namespace GameTool
         {
             EventKey thisInfo = new EventKey(eventName, typeof(T1), typeof(T2));
 
-            if (RegistoredEvents.TryGetValue(thisInfo, out object thisEvent))
+            if (RegisteredEvents.TryGetValue(thisInfo, out object thisEvent))
             {
                 ((UnityEvent<T1, T2>)thisEvent).Invoke(message1, message2);
             }
@@ -244,6 +231,114 @@ namespace GameTool
             {
                 Debug.LogWarning("Event not registered : " + thisInfo.ToString());
             }
+        }
+
+        /// <summary>
+        /// Clear all registered events. Useful for scene transitions or cleanup.
+        /// </summary>
+        public static void ClearAllEvents()
+        {
+            RegisteredEvents.Clear();
+            Debug.Log("All events cleared from EventManager");
+        }
+
+        /// <summary>
+        /// Remove a specific event from the registry.
+        /// </summary>
+        /// <param name="eventName">Event name to remove.</param>
+        public static void RemoveEvent(string eventName)
+        {
+            EventKey thisInfo = new EventKey(eventName);
+            if (RegisteredEvents.Remove(thisInfo))
+            {
+                Debug.Log($"Event removed: {thisInfo.ToString()}");
+            }
+            else
+            {
+                Debug.LogWarning($"Event not found for removal: {thisInfo.ToString()}");
+            }
+        }
+
+        /// <summary>
+        /// Remove a specific single-argument event from the registry.
+        /// </summary>
+        /// <typeparam name="T">Payload type.</typeparam>
+        /// <param name="eventName">Event name to remove.</param>
+        public static void RemoveEvent<T>(string eventName)
+        {
+            EventKey thisInfo = new EventKey(eventName, typeof(T));
+            if (RegisteredEvents.Remove(thisInfo))
+            {
+                Debug.Log($"Event removed: {thisInfo.ToString()}");
+            }
+            else
+            {
+                Debug.LogWarning($"Event not found for removal: {thisInfo.ToString()}");
+            }
+        }
+
+        /// <summary>
+        /// Remove a specific two-argument event from the registry.
+        /// </summary>
+        /// <typeparam name="T1">First payload type.</typeparam>
+        /// <typeparam name="T2">Second payload type.</typeparam>
+        /// <param name="eventName">Event name to remove.</param>
+        public static void RemoveEvent<T1, T2>(string eventName)
+        {
+            EventKey thisInfo = new EventKey(eventName, typeof(T1), typeof(T2));
+            if (RegisteredEvents.Remove(thisInfo))
+            {
+                Debug.Log($"Event removed: {thisInfo.ToString()}");
+            }
+            else
+            {
+                Debug.LogWarning($"Event not found for removal: {thisInfo.ToString()}");
+            }
+        }
+
+        /// <summary>
+        /// Get the number of registered events.
+        /// </summary>
+        /// <returns>Count of registered events.</returns>
+        public static int GetEventCount()
+        {
+            return RegisteredEvents.Count;
+        }
+
+        /// <summary>
+        /// Check if an event is registered.
+        /// </summary>
+        /// <param name="eventName">Event name to check.</param>
+        /// <returns>True if event exists, false otherwise.</returns>
+        public static bool HasEvent(string eventName)
+        {
+            EventKey thisInfo = new EventKey(eventName);
+            return RegisteredEvents.ContainsKey(thisInfo);
+        }
+
+        /// <summary>
+        /// Check if a single-argument event is registered.
+        /// </summary>
+        /// <typeparam name="T">Payload type.</typeparam>
+        /// <param name="eventName">Event name to check.</param>
+        /// <returns>True if event exists, false otherwise.</returns>
+        public static bool HasEvent<T>(string eventName)
+        {
+            EventKey thisInfo = new EventKey(eventName, typeof(T));
+            return RegisteredEvents.ContainsKey(thisInfo);
+        }
+
+        /// <summary>
+        /// Check if a two-argument event is registered.
+        /// </summary>
+        /// <typeparam name="T1">First payload type.</typeparam>
+        /// <typeparam name="T2">Second payload type.</typeparam>
+        /// <param name="eventName">Event name to check.</param>
+        /// <returns>True if event exists, false otherwise.</returns>
+        public static bool HasEvent<T1, T2>(string eventName)
+        {
+            EventKey thisInfo = new EventKey(eventName, typeof(T1), typeof(T2));
+            return RegisteredEvents.ContainsKey(thisInfo);
         }
     }
 }

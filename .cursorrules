@@ -1,0 +1,54 @@
+# Cursor Rules for Unity Project
+
+## AI Response Rules
+- **ONLY do what is asked** - Don't add extra features unless specifically requested
+- **Extra related functions** - Display as suggestions at the end of message
+- **Setup steps** - Show at the end of message, not in the middle
+- **Be concise** - Answer the specific question first, then provide suggestions
+- **Don't over-engineer** - Keep solutions simple and focused
+- **Keep responses short** - Provide brief, direct answers with fewer excessive details
+
+## File Organization Rules
+- **New Functions**: When creating new functions, create a new folder for each function
+- **AI Decision**: Cursor can decide what counts as a "new function" based on:
+  - Standalone functionality that can be used independently
+  - Complete features with multiple related scripts
+  - Systems that have clear boundaries and purposes
+- **Dev Folder**: Each function folder should have a `dev/` subfolder for development files
+- **Main Scripts**: ALL main function scripts go in the `dev/` subfolder, NOT in the root function folder
+- **Testing Script**: Only one testing script per function folder, placed in the `dev/` subfolder
+- **Tools Folder**: Functions that can be reused across different games go to `Assets/Scripts/Tools/`
+- **Folder Creation**: Always inform user when creating new folders
+- **Existing Structure**: Respect existing folder organization (Player/, AI/, Network/, etc.)
+
+## Examples of New Function Folders:
+- `Assets/Scripts/InventorySystem/dev/` - ALL inventory scripts go here
+- `Assets/Scripts/InventorySystem/dev/InventorySystemTester.cs` - Single testing script
+- `Assets/Scripts/QuestSystem/dev/` - ALL quest system scripts go here
+- `Assets/Scripts/QuestSystem/dev/QuestSystemTester.cs` - Single testing script
+- `Assets/Scripts/WeatherSystem/dev/` - ALL weather system scripts go here
+- `Assets/Scripts/WeatherSystem/dev/WeatherSystemTester.cs` - Single testing script
+- `Assets/Scripts/HPBarSystem/dev/` - ALL HP bar system scripts go here
+- `Assets/Scripts/HPBarSystem/dev/HPBarSystemTester.cs` - Single testing script
+- `Assets/Scripts/Tools/InputManager/` - Reusable input handling
+- `Assets/Scripts/Tools/AudioManager/` - Reusable audio system
+- `Assets/Scripts/Tools/SceneManager/` - Reusable scene management
+
+## Event System Architecture
+- **Event-First Architecture**: Prioritize event system for all inter-system communication
+- **Direct References**: Only use for tightly coupled components or performance-critical code
+- **System Boundaries**: Use events to cross system boundaries, direct refs within systems
+- **Event Manager Location**: Place EventManager in `Assets/Scripts/Tools/Event/`
+- **Event Naming**: Use descriptive event names (e.g., "PlayerHealthChanged", "EnemyDestroyed")
+- **Event Data**: Pass relevant data through event parameters, not global variables
+- **Subscribe/Unsubscribe**: Always unsubscribe from events in OnDestroy to prevent memory leaks
+- **Event Categories**: Group related events (e.g., GameEvents.Player.*, GameEvents.UI.*)
+- **Debug Events**: Add debug logging to event calls for easier debugging
+
+## File Placement Guidelines:
+- **Game-specific features** → `Assets/Scripts/[FeatureName]/dev/`
+- **Reusable utilities** → `Assets/Scripts/Tools/[ToolName]/`
+- **Event System** → `Assets/Scripts/Tools/Event/`
+- **Player-related** → `Assets/Scripts/Player/` (existing)
+- **AI-related** → `Assets/Scripts/AI/` (existing)
+- **Network-related** → `Assets/Scripts/Network/` (existing)

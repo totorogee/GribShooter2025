@@ -165,7 +165,19 @@ namespace GameTool
                 
                 if (eventOptions.Length > 0)
                 {
-                    eventOptionsIndex = EditorGUILayout.Popup("Event Name", eventOptionsIndex, eventOptions);
+                    int newEventOptionsIndex = EditorGUILayout.Popup("Event Name", eventOptionsIndex, eventOptions);
+                    
+                    // Check if selection changed and update argument types immediately
+                    if (newEventOptionsIndex != eventOptionsIndex)
+                    {
+                        eventOptionsIndex = newEventOptionsIndex;
+                        UpdateArgumentTypes();
+                    }
+                    else
+                    {
+                        eventOptionsIndex = newEventOptionsIndex;
+                    }
+                    
                     InputArgument(Arg1);
                     InputArgument(Arg2);
 
@@ -254,6 +266,37 @@ namespace GameTool
             }
         }
 
+        private void OnEnable()
+        {
+            // Subscribe to play mode state changes
+            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+        }
+
+        private void OnDisable()
+        {
+            // Unsubscribe from play mode state changes
+            EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+        }
+
+        private void OnPlayModeStateChanged(PlayModeStateChange state)
+        {
+            if (state == PlayModeStateChange.EnteredPlayMode)
+            {
+                // Force refresh when entering play mode
+                forceRefresh = true;
+                needsEventDataUpdate = true;
+                
+                // Also schedule a delayed refresh in case events are registered after play mode starts
+                EditorApplication.delayCall += () => {
+                    if (EditorApplication.isPlaying)
+                    {
+                        forceRefresh = true;
+                        needsEventDataUpdate = true;
+                    }
+                };
+            }
+        }
+
         private void UpdateEventDataIfNeeded()
         {
             if (needsEventDataUpdate || forceRefresh)
@@ -262,11 +305,20 @@ namespace GameTool
                 needsEventDataUpdate = false;
                 forceRefresh = false;
             }
+            else if (EditorApplication.isPlaying)
+            {
+                // Check if we need to update due to new events being registered
+                var currentEventCount = EventManager.GetEventCount();
+                if (currentEventCount != lastRegisteredEventCount)
+                {
+                    UpdateEventData();
+                }
+            }
         }
 
         private void UpdateEventData()
         {
-            var RegisteredEvents = EventManager.GetRegistoredEvents().ToList();
+            var RegisteredEvents = EventManager.GetRegisteredEvents().ToList();
             lastRegisteredEventCount = RegisteredEvents.Count;
 
             if (RegisteredEvents.Count > 0)
@@ -296,6 +348,13 @@ namespace GameTool
                 eventOptionsIndex = 0;
             }
 
+            UpdateArgumentTypes();
+        }
+
+        private void UpdateArgumentTypes()
+        {
+            var RegisteredEvents = EventManager.GetRegisteredEvents().ToList();
+            
             if (eventOptionsIndex < RegisteredEvents.Count && RegisteredEvents.Count > 0)
             {
                 Arg1.InputType = RegisteredEvents[eventOptionsIndex].Key.ParamType1;

@@ -8,6 +8,20 @@ using UnityEngine;
 
 namespace GameTool.Hex
 {
+    public static partial class EventName 
+{
+    public static string InitHexAtMouse         = "InitHexAtMouse";
+    public static string ClearTileAtMouse       = "ClearTileAtMouse";
+    public static string InitHexByHexInt        = "InitHexByHexInt";
+    public static string InitTilesHexRing       = "InitTilesHexRing";
+    public static string InitTilesHexPlane      = "InitTilesHexPlane";
+    public static string InitTilesCirPlane      = "InitTilesCirPlane";
+    public static string ClearAllTiles          = "ClearAllTiles";
+    public static string DisplayDataByHexInt    = "DisplayDataByHexInt";
+    
+}
+
+
     public enum Orientations
     {
         Flat = 0,
