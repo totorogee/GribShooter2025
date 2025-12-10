@@ -10,7 +10,7 @@ namespace GameTool.Hex
     /// Handles both flat-topped and pointy-topped hexagon orientations.
     /// Uses event-driven architecture for tile generation commands.
     /// </summary>
-    public class HexEnvController : MonoBehaviour
+    public class HexEnvController : SceneSingleton<HexEnvController>
 	{
         [Header("Hex System Configuration")]
         [SerializeField]
@@ -46,14 +46,15 @@ namespace GameTool.Hex
 
         [Header("Debug Info")]
         [Tooltip("Current number of child tiles (excluding prefabs)")]
-        public int ChildCount = 0; 
+        public int ChildCount = 0;
 
         /// <summary>
         /// Initialize the hexagon tile system on awake
         /// </summary>
-        private void Awake()
-		{
-			InitTiles();
+        protected override void Awake()
+        {
+            base.Awake();
+            InitTiles();
 		}
 
         /// <summary>

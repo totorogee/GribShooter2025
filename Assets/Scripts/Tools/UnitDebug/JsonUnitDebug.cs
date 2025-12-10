@@ -24,6 +24,9 @@ public class JsonUnitDebug : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        // Apply custom JSON settings for Unity Vector types
+        JsonHelper.ApplyCustomSetting();
+        
         JsonDataTest jsonData = new JsonDataTest
         {
             Int = 1,
