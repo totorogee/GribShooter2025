@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Newtonsoft.Json.Bson;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace GameTool.Hex
 {
@@ -87,12 +88,12 @@ namespace GameTool.Hex
         private void Update()
         {
             // B key: Generate tile at mouse position
-            if (Input.GetKeyDown(KeyCode.B))
+            if (Keyboard.current != null && Keyboard.current.bKey.wasPressedThisFrame)
             {
                 GenerateTileAtMouse();
             }
             // V key: Clear tile at mouse position
-            if (Input.GetKeyDown(KeyCode.V))
+            if (Keyboard.current != null && Keyboard.current.vKey.wasPressedThisFrame)
             {
                 ClearTileAtMouse();
             }
@@ -155,8 +156,9 @@ namespace GameTool.Hex
         public void GenerateTileAtMouse()
 		{
 			// Convert mouse screen position to world coordinates
+			Vector2 mouseScreenPos = Mouse.current != null ? Mouse.current.position.ReadValue() : Vector2.zero;
 			Vector2 mouseWorld = Camera.main.ScreenToWorldPoint(
-				new Vector3((Input.mousePosition).x, (Input.mousePosition).y, Camera.main.nearClipPlane)
+				new Vector3(mouseScreenPos.x, mouseScreenPos.y, Camera.main.nearClipPlane)
 				);
             Cart cart = new Cart(mouseWorld.x, mouseWorld.y);
             // Convert world coordinates to hex coordinates and generate tile
@@ -170,8 +172,9 @@ namespace GameTool.Hex
         public void ClearTileAtMouse()
         {
             // Convert mouse screen position to world coordinates
+            Vector2 mouseScreenPos = Mouse.current != null ? Mouse.current.position.ReadValue() : Vector2.zero;
             Vector2 mouseWorld = Camera.main.ScreenToWorldPoint(
-				new Vector3((Input.mousePosition).x, (Input.mousePosition).y, Camera.main.nearClipPlane)
+				new Vector3(mouseScreenPos.x, mouseScreenPos.y, Camera.main.nearClipPlane)
 				);
             Cart cart = new Cart(mouseWorld.x, mouseWorld.y);
             // Convert to hex coordinates and find tile

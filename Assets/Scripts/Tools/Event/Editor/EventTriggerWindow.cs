@@ -253,7 +253,12 @@ namespace GameTool
                 }
             }
 
-            if (Input.GetKeyDown(TRIGGER_HOTKEY)) { OnTriggerPressed(); }
+            // Editor window keyboard input
+            if (Event.current != null && Event.current.type == EventType.KeyDown && Event.current.keyCode == TRIGGER_HOTKEY)
+            {
+                OnTriggerPressed();
+                Event.current.Use();
+            }
         }
 
         private void OnFocus()
