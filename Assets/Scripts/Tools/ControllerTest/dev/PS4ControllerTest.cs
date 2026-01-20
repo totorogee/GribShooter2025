@@ -21,6 +21,16 @@ public class PS4ControllerTest : MonoBehaviour
     [Tooltip("Show debug information about controller state")]
     public bool showDebugInfo = true;
 
+    [Header("Movement Settings")]
+    [Tooltip("Movement speed for left stick input")]
+    public float moveSpeed = 5f;
+    [Tooltip("Use local space or world space for movement")]
+    public bool useLocalSpace = false;
+
+    [Header("Color Settings")]
+    [Tooltip("Renderer component to change color (auto-detected if not assigned)")]
+    public Renderer targetRenderer;
+
     private Gamepad gamepad;
     private float lastUpdateTime = 0f;
     private float lastDebugTime = 0f;
@@ -29,29 +39,44 @@ public class PS4ControllerTest : MonoBehaviour
     {
         // Verify Input System is available
         #if ENABLE_INPUT_SYSTEM
-        Debug.Log("Input System is enabled");
+        if (showDebugInfo) Debug.Log("Input System is enabled");
         #else
         Debug.LogError("Input System is NOT enabled! Go to: Edit > Project Settings > Player > Active Input Handling");
         return;
         #endif
         
         // List all input devices
-        Debug.Log("=== Checking Input Devices ===");
-        var devices = InputSystem.devices;
-        Debug.Log($"Total Input Devices: {devices.Count}");
-        
-        foreach (var device in devices)
+        if (showDebugInfo)
         {
-            Debug.Log($"- Device: {device.name} (Type: {device.GetType().Name}, Enabled: {device.enabled})");
+            Debug.Log("=== Checking Input Devices ===");
+        }
+        var devices = InputSystem.devices;
+        if (showDebugInfo)
+        {
+            Debug.Log($"Total Input Devices: {devices.Count}");
+        }
+        
+        if (showDebugInfo)
+        {
+            foreach (var device in devices)
+            {
+                Debug.Log($"- Device: {device.name} (Type: {device.GetType().Name}, Enabled: {device.enabled})");
+            }
         }
         
         // Find all gamepads
         var gamepads = Gamepad.all;
-        Debug.Log($"\nTotal Gamepads: {gamepads.Count}");
-        
-        foreach (var gp in gamepads)
+        if (showDebugInfo)
         {
-            Debug.Log($"- Gamepad: {gp.name} (ID: {gp.deviceId}, Enabled: {gp.enabled})");
+            Debug.Log($"\nTotal Gamepads: {gamepads.Count}");
+        }
+        
+        if (showDebugInfo)
+        {
+            foreach (var gp in gamepads)
+            {
+                Debug.Log($"- Gamepad: {gp.name} (ID: {gp.deviceId}, Enabled: {gp.enabled})");
+            }
         }
         
         // Try to get current gamepad
@@ -61,31 +86,64 @@ public class PS4ControllerTest : MonoBehaviour
         {
             // Use first available gamepad if current is null
             gamepad = gamepads[0];
-            Debug.Log($"Using first available gamepad: {gamepad.name}");
+            if (showDebugInfo)
+            {
+                Debug.Log($"Using first available gamepad: {gamepad.name}");
+            }
         }
         
         if (gamepad != null)
         {
-            Debug.Log($"\n=== PS4 Controller Connected ===");
-            Debug.Log($"Controller Name: {gamepad.name}");
-            Debug.Log($"Device ID: {gamepad.deviceId}");
-            Debug.Log($"Enabled: {gamepad.enabled}");
-            Debug.Log($"Type: {gamepad.GetType().Name}");
+            if (showDebugInfo)
+            {
+                Debug.Log($"\n=== PS4 Controller Connected ===");
+                Debug.Log($"Controller Name: {gamepad.name}");
+                Debug.Log($"Device ID: {gamepad.deviceId}");
+                Debug.Log($"Enabled: {gamepad.enabled}");
+                Debug.Log($"Type: {gamepad.GetType().Name}");
+            }
             
             // Try to enable if not enabled
             if (!gamepad.enabled)
             {
                 InputSystem.EnableDevice(gamepad);
-                Debug.Log("Attempted to enable gamepad");
+                if (showDebugInfo)
+                {
+                    Debug.Log("Attempted to enable gamepad");
+                }
             }
             
-            Debug.Log("Press any button or move sticks to test!");
-            Debug.Log("========================================");
+            if (showDebugInfo)
+            {
+                Debug.Log("Press any button or move sticks to test!");
+                Debug.Log("========================================");
+            }
         }
         else
         {
             Debug.LogWarning("No gamepad detected! Please connect a controller.");
             Debug.LogWarning("Make sure Input System is enabled in Project Settings!");
+        }
+
+        // Auto-detect renderer if not assigned
+        if (targetRenderer == null)
+        {
+            targetRenderer = GetComponent<Renderer>();
+            if (targetRenderer == null)
+            {
+                targetRenderer = GetComponentInChildren<Renderer>();
+            }
+            if (targetRenderer != null)
+            {
+                if (showDebugInfo)
+                {
+                    Debug.Log($"Auto-detected Renderer: {targetRenderer.name}");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("No Renderer found! Color changing will not work. Add a Renderer component to this GameObject or its children.");
+            }
         }
     }
 
@@ -120,6 +178,9 @@ public class PS4ControllerTest : MonoBehaviour
                 Debug.LogWarning("Gamepad was disabled, attempting to re-enable...");
             }
         }
+
+        // Move object with left stick
+        MoveWithLeftStick();
 
         // Test all buttons
         TestButtons();
@@ -184,81 +245,134 @@ public class PS4ControllerTest : MonoBehaviour
     }
 
     /// <summary>
+    /// Move the object with left stick input (X-Y plane)
+    /// </summary>
+    private void MoveWithLeftStick()
+    {
+        if (gamepad == null) return;
+
+        Vector2 leftStick = gamepad.leftStick.ReadValue();
+        
+        if (leftStick.magnitude > 0.1f) // Dead zone
+        {
+            // X-Y plane movement (2D)
+            Vector3 movement = new Vector3(leftStick.x, leftStick.y, 0f) * moveSpeed * Time.deltaTime;
+            
+            if (useLocalSpace)
+            {
+                transform.Translate(movement, Space.Self);
+            }
+            else
+            {
+                transform.Translate(movement, Space.World);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Change color of the renderer
+    /// </summary>
+    private void ChangeColor(Color newColor, string colorName)
+    {
+        if (targetRenderer != null)
+        {
+            targetRenderer.material.color = newColor;
+            if (showButtonPresses)
+            {
+                Debug.Log($"🎨 Color changed to: {colorName}");
+            }
+        }
+    }
+
+    /// <summary>
     /// Test all PS4 controller buttons
     /// </summary>
     private void TestButtons()
     {
-        // Face Buttons
-        if (gamepad.buttonSouth.wasPressedThisFrame) // X Button
+        // Face Buttons - Change colors
+        if (gamepad.buttonSouth.wasPressedThisFrame) // X Button - Red
         {
-            LogButton("X Button (South)", gamepad.buttonSouth.isPressed);
+            if (showButtonPresses) LogButton("X Button (South)", gamepad.buttonSouth.isPressed);
+            ChangeColor(Color.red, "Red");
         }
         
-        if (gamepad.buttonWest.wasPressedThisFrame) // Square Button
+        if (gamepad.buttonWest.wasPressedThisFrame) // Square Button - Blue
         {
-            LogButton("Square Button (West)", gamepad.buttonWest.isPressed);
+            if (showButtonPresses) LogButton("Square Button (West)", gamepad.buttonWest.isPressed);
+            ChangeColor(Color.blue, "Blue");
         }
         
-        if (gamepad.buttonNorth.wasPressedThisFrame) // Triangle Button
+        if (gamepad.buttonNorth.wasPressedThisFrame) // Triangle Button - Yellow
         {
-            LogButton("Triangle Button (North)", gamepad.buttonNorth.isPressed);
+            if (showButtonPresses) LogButton("Triangle Button (North)", gamepad.buttonNorth.isPressed);
+            ChangeColor(Color.yellow, "Yellow");
         }
         
-        if (gamepad.buttonEast.wasPressedThisFrame) // Circle Button
+        if (gamepad.buttonEast.wasPressedThisFrame) // Circle Button - Green
         {
-            LogButton("Circle Button (East)", gamepad.buttonEast.isPressed);
+            if (showButtonPresses) LogButton("Circle Button (East)", gamepad.buttonEast.isPressed);
+            ChangeColor(Color.green, "Green");
         }
 
-        // Shoulder Buttons
-        if (gamepad.leftShoulder.wasPressedThisFrame) // L1
+        // Shoulder Buttons - Change colors
+        if (gamepad.leftShoulder.wasPressedThisFrame) // L1 - Cyan
         {
-            LogButton("L1 (Left Shoulder)", gamepad.leftShoulder.isPressed);
+            if (showButtonPresses) LogButton("L1 (Left Shoulder)", gamepad.leftShoulder.isPressed);
+            ChangeColor(Color.cyan, "Cyan");
         }
         
-        if (gamepad.rightShoulder.wasPressedThisFrame) // R1
+        if (gamepad.rightShoulder.wasPressedThisFrame) // R1 - Magenta
         {
-            LogButton("R1 (Right Shoulder)", gamepad.rightShoulder.isPressed);
+            if (showButtonPresses) LogButton("R1 (Right Shoulder)", gamepad.rightShoulder.isPressed);
+            ChangeColor(Color.magenta, "Magenta");
         }
 
-        // Triggers (as buttons)
-        if (gamepad.leftTrigger.wasPressedThisFrame) // L2
+        // Triggers (as buttons) - Change colors
+        if (gamepad.leftTrigger.wasPressedThisFrame) // L2 - Orange
         {
-            LogButton("L2 (Left Trigger)", gamepad.leftTrigger.isPressed);
+            if (showButtonPresses) LogButton("L2 (Left Trigger)", gamepad.leftTrigger.isPressed);
+            ChangeColor(new Color(1f, 0.5f, 0f), "Orange");
         }
         
-        if (gamepad.rightTrigger.wasPressedThisFrame) // R2
+        if (gamepad.rightTrigger.wasPressedThisFrame) // R2 - Purple
         {
-            LogButton("R2 (Right Trigger)", gamepad.rightTrigger.isPressed);
+            if (showButtonPresses) LogButton("R2 (Right Trigger)", gamepad.rightTrigger.isPressed);
+            ChangeColor(new Color(0.5f, 0f, 0.5f), "Purple");
         }
 
-        // Stick Buttons
-        if (gamepad.leftStickButton.wasPressedThisFrame) // L3
+        // Stick Buttons - Change colors
+        if (gamepad.leftStickButton.wasPressedThisFrame) // L3 - White
         {
-            LogButton("L3 (Left Stick Press)", gamepad.leftStickButton.isPressed);
+            if (showButtonPresses) LogButton("L3 (Left Stick Press)", gamepad.leftStickButton.isPressed);
+            ChangeColor(Color.white, "White");
         }
         
-        if (gamepad.rightStickButton.wasPressedThisFrame) // R3
+        if (gamepad.rightStickButton.wasPressedThisFrame) // R3 - Black
         {
-            LogButton("R3 (Right Stick Press)", gamepad.rightStickButton.isPressed);
+            if (showButtonPresses) LogButton("R3 (Right Stick Press)", gamepad.rightStickButton.isPressed);
+            ChangeColor(Color.black, "Black");
         }
 
-        // System Buttons
-        if (gamepad.startButton.wasPressedThisFrame) // Options
+        // System Buttons - Change colors
+        if (gamepad.startButton.wasPressedThisFrame) // Options - Gray
         {
-            LogButton("Options (Start)", gamepad.startButton.isPressed);
+            if (showButtonPresses) LogButton("Options (Start)", gamepad.startButton.isPressed);
+            ChangeColor(Color.gray, "Gray");
         }
         
-        if (gamepad.selectButton.wasPressedThisFrame) // Share
+        if (gamepad.selectButton.wasPressedThisFrame) // Share - Reset to default
         {
-            LogButton("Share (Select)", gamepad.selectButton.isPressed);
+            if (showButtonPresses) LogButton("Share (Select)", gamepad.selectButton.isPressed);
+            ChangeColor(Color.white, "Default (White)");
         }
 
-        // Touchpad (if available)
+        // Touchpad (if available) - Change color
         if (gamepad is UnityEngine.InputSystem.DualShock.DualShockGamepad dualShock)
         {
             if (dualShock.touchpadButton.wasPressedThisFrame)
             {
-                LogButton("Touchpad Button", dualShock.touchpadButton.isPressed);
+                if (showButtonPresses) LogButton("Touchpad Button", dualShock.touchpadButton.isPressed);
+                ChangeColor(new Color(0f, 1f, 1f), "Aqua");
             }
         }
     }
@@ -318,6 +432,8 @@ public class PS4ControllerTest : MonoBehaviour
     /// </summary>
     private void CheckButtonStates()
     {
+        if (!showButtonPresses) return;
+        
         if (gamepad.buttonSouth.isPressed) Debug.Log("🎮 X Button is PRESSED");
         if (gamepad.buttonWest.isPressed) Debug.Log("🎮 Square Button is PRESSED");
         if (gamepad.buttonNorth.isPressed) Debug.Log("🎮 Triangle Button is PRESSED");

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 /// <summary>
 /// Controls a 2D sword swinging animation.
@@ -23,10 +24,29 @@ public class SwingSword : MonoBehaviour
         Returning
     }
     
+    [System.Serializable]
+    public enum GamepadButton
+    {
+        Square,    // buttonWest
+        X,         // buttonSouth
+        Triangle,  // buttonNorth
+        Circle,    // buttonEast
+        L1,        // leftShoulder
+        R1,        // rightShoulder
+        L2,        // leftTrigger
+        R2         // rightTrigger
+    }
+    
     [Header("Swing Settings")]
     [SerializeField] private SwingDirection swingDirection = SwingDirection.Right;
     [SerializeField] private KeyCode swingKey = KeyCode.Mouse0;
     [SerializeField] private bool autoSwingOnInput = true;
+    
+    [Header("Controller Input")]
+    [Tooltip("Enable PS4/Gamepad controller support")]
+    [SerializeField] private bool useGamepad = true;
+    [Tooltip("PS4 button to trigger swing")]
+    [SerializeField] private GamepadButton gamepadSwingButton = GamepadButton.Square;
     
     [Header("Rotation Angles")]
     [SerializeField] private float restAngle = -45f; // Angle when at rest
@@ -158,10 +178,86 @@ public class SwingSword : MonoBehaviour
     /// </summary>
     private void HandleInput()
     {
-        if (!autoSwingOnInput)
+        if (!autoSwingOnInput || currentState != SwingState.Rest)
             return;
         
-        if (Input.GetKeyDown(swingKey) && currentState == SwingState.Rest)
+        bool inputPressed = false;
+        
+        // Check keyboard/mouse input (using new Input System)
+        if (swingKey == KeyCode.Mouse0 && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            inputPressed = true;
+        }
+        else if (swingKey == KeyCode.Mouse1 && Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame)
+        {
+            inputPressed = true;
+        }
+        else if (Keyboard.current != null)
+        {
+            // Map KeyCode to Keyboard key
+            Key key = Key.None;
+            if (swingKey == KeyCode.Space) key = Key.Space;
+            else if (swingKey == KeyCode.Return) key = Key.Enter;
+            else if (swingKey == KeyCode.LeftShift) key = Key.LeftShift;
+            else if (swingKey == KeyCode.RightShift) key = Key.RightShift;
+            else if (swingKey == KeyCode.LeftControl) key = Key.LeftCtrl;
+            else if (swingKey == KeyCode.RightControl) key = Key.RightCtrl;
+            else if (swingKey >= KeyCode.A && swingKey <= KeyCode.Z)
+            {
+                // Convert KeyCode to Key (A=97, so KeyCode.A = 97, Key.A = 97)
+                key = (Key)((int)swingKey);
+            }
+            
+            if (key != Key.None && Keyboard.current[key].wasPressedThisFrame)
+            {
+                inputPressed = true;
+            }
+        }
+        
+        // Check gamepad input
+        if (useGamepad && !inputPressed)
+        {
+            Gamepad gamepad = Gamepad.current;
+            if (gamepad != null)
+            {
+                bool buttonPressed = false;
+                
+                switch (gamepadSwingButton)
+                {
+                    case GamepadButton.Square:
+                        buttonPressed = gamepad.buttonWest.wasPressedThisFrame;
+                        break;
+                    case GamepadButton.X:
+                        buttonPressed = gamepad.buttonSouth.wasPressedThisFrame;
+                        break;
+                    case GamepadButton.Triangle:
+                        buttonPressed = gamepad.buttonNorth.wasPressedThisFrame;
+                        break;
+                    case GamepadButton.Circle:
+                        buttonPressed = gamepad.buttonEast.wasPressedThisFrame;
+                        break;
+                    case GamepadButton.L1:
+                        buttonPressed = gamepad.leftShoulder.wasPressedThisFrame;
+                        break;
+                    case GamepadButton.R1:
+                        buttonPressed = gamepad.rightShoulder.wasPressedThisFrame;
+                        break;
+                    case GamepadButton.L2:
+                        buttonPressed = gamepad.leftTrigger.wasPressedThisFrame;
+                        break;
+                    case GamepadButton.R2:
+                        buttonPressed = gamepad.rightTrigger.wasPressedThisFrame;
+                        break;
+                }
+                
+                if (buttonPressed)
+                {
+                    inputPressed = true;
+                }
+            }
+        }
+        
+        if (inputPressed)
         {
             StartSwing();
         }
